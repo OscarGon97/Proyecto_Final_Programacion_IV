@@ -93,8 +93,7 @@ CREATE TABLE IF NOT EXISTS appointments (
     registration_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_app_patient FOREIGN KEY (id_patient) REFERENCES patients(id_patient),
     CONSTRAINT fk_app_dentist FOREIGN KEY (id_dentist_user) REFERENCES users(id_user),
-    CONSTRAINT fk_app_status FOREIGN KEY (id_appointment_status) REFERENCES appointment_statuses(id_status),
-    CONSTRAINT chk_appointment_date_future CHECK (appointment_date >= CURDATE() - INTERVAL 1 DAY)
+    CONSTRAINT fk_app_status FOREIGN KEY (id_appointment_status) REFERENCES appointment_statuses(id_status)
 );
 
 CREATE TABLE IF NOT EXISTS medical_histories (
@@ -127,8 +126,7 @@ CREATE TABLE IF NOT EXISTS products (
     purchase_price DECIMAL(10,2) NOT NULL,
     min_stock INT DEFAULT 5,
     measurement_unit VARCHAR(20),
-    CONSTRAINT fk_prod_cat FOREIGN KEY (id_category) REFERENCES product_categories(id_category),
-    CONSTRAINT chk_products_prices CHECK (sale_price >= 0 AND purchase_price >= 0)
+    CONSTRAINT fk_prod_cat FOREIGN KEY (id_category) REFERENCES product_categories(id_category)
 );
 
 CREATE TABLE IF NOT EXISTS batches (
@@ -139,8 +137,7 @@ CREATE TABLE IF NOT EXISTS batches (
     expiration_date DATE,
     initial_quantity INT NOT NULL,
     current_quantity INT NOT NULL,
-    CONSTRAINT fk_batch_prod FOREIGN KEY (id_product) REFERENCES products(id_product),
-    CONSTRAINT chk_batches_quantities CHECK (initial_quantity > 0 AND current_quantity >= 0)
+    CONSTRAINT fk_batch_prod FOREIGN KEY (id_product) REFERENCES products(id_product)
 );
 
 CREATE TABLE IF NOT EXISTS inventory_movements (
