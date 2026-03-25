@@ -180,7 +180,7 @@ $sale_details = $pdo->query("SELECT sd.id_sale, p.product_name, sd.quantity, sd.
         <a href="logout.php" class="logout-btn mt-3">Sign Out</a>
 
         <!-- Modo oscuro -->
-        <button id="darkModeBtn" class="logout-btn mt-2">Modo oscuro</button>
+        <button id="darkModeBtn" class="logout-btn mt-2">Dark Mode</button>
 
     </div>
 
@@ -249,7 +249,7 @@ document.addEventListener("DOMContentLoaded", function() {
         }, 120000);
     }
 
-    // 🌙 modo oscuro
+    // modo oscuro
     const btn = document.getElementById("darkModeBtn");
 
     if (btn) {
