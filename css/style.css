@@ -431,6 +431,7 @@ body.dark-mode {
     --color4: #cecece;   /* fondos suaves */
     --color5: #1f2028;   /* fondo más oscuro (ajustado para contraste) */
     --color6: #BFD4EC;   /* detalles azules */
+    --color7: #7FA9D6;   /* acento */
 }
 
 #darkModeBtn {
@@ -488,7 +489,7 @@ body.dark-mode .side-btn:hover {
 
 /* botón activo */
 body.dark-mode .side-btn.active {
-    background: #7FA9D6;
+    background: var(--color7);
     color: #1f2028;
 }
 
@@ -512,6 +513,26 @@ body.dark-mode input:focus,
 body.dark-mode select:focus,
 body.dark-mode textarea:focus {
     outline: none;
-    border: 1px solid #7FA9D6;
+    border: 1px solid var(--color7);
     box-shadow: 0 0 5px rgba(127, 169, 214, 0.5);
+}
+
+/* títulos modo oscuro */
+body.dark-mode h2,
+body.dark-mode h3 {
+    color: var(--color7);
+}
+
+/* modificación */
+body.dark-mode h2 {
+    border-bottom: 2px solid var(--color7);
+    padding-bottom: 5px;
+}
+
+body.dark-mode h3 {
+    background: var(--color7);
+    color: #1f2028; /* ← ESTO es lo que te falta */
+    padding: 8px 12px;
+    border-radius: 10px;
+    display: inline-block;
 }

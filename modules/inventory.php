@@ -2,7 +2,7 @@
 
     <!-- Productos -->
     <section>
-        <h2>Productos</h2>
+        <h2>Products</h2>
         <table>
             <thead>
                 <tr>
