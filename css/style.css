@@ -1,18 +1,17 @@
 /* Paleta de color */
 :root {
-    --morado-oscuro-1: #957698;
-    --morado-oscuro-2: #572853;
-    --morado-pastel: #B39EB5;
-    --morado-claro: #CDBFCB;
-    --morado-gris: #f2ebf3;
-    --gris-claro: #F0F5F6;
-    --gris: #CECECE;
+    --color1: #1E3A5F;
+    --color2: #3F6E9E;
+    --color3: #7FA9D6;
+    --color4: #BFD4EC;
+    --color5: #EAF2FA;
+    --color6: #D9D9D9;
 }
 
 /* Login */
 
 body.login-page{
-    background:var(--morado-claro);
+    background:var(--color4);
     height:100vh;
     display:flex;
     justify-content:center;
@@ -22,11 +21,11 @@ body.login-page{
 
 /* tarjeta */
 .login-page .login-card{
-    background:var(--morado-oscuro-2) !important;
+    background:var(--color1) !important;
     border-radius:18px;
     padding:40px;
     width:360px;
-    box-shadow:0 12px 28px var(--morado-oscuro-2);
+    box-shadow:0 12px 28px var(--color1);
 }
 
 /* avatar */
@@ -58,13 +57,13 @@ body.login-page{
 
 /* labels */
 .login-page .form-label{
-    color:var(--gris-claro) !important;
+    color:var(--color5) !important;
     font-size:14px;
 }
 
 /* inputs */
 .login-page input.form-control{
-    background:var(--gris-claro) !important;
+    background:var(--color5) !important;
     border:none !important;
     padding:10px;
 }
@@ -76,14 +75,14 @@ body.login-page{
 
 /* boton */
 .login-page .btn-login{
-    background:var(--morado-oscuro-2) !important;
+    background:var(--color1) !important;
     border:none;
     font-weight:500;
     color:white;
 }
 
 .login-page .btn-login:hover{
-    background:var(--morado-oscuro-1) !important;
+    background:var(--color2) !important;
 }
 
 /* error */
@@ -108,22 +107,22 @@ body.login-page{
 
 body {
     font-family: 'Segoe UI', sans-serif;
-    background: var(--morado-pastel);
+    background: var(--color3);
 }
 
 /* Header */
 .header {
-    background: var(--morado-oscuro-2) !important;
+    background: var(--color1) !important;
     color: white;
     padding: 15px 25px;
     display: flex;
-    justify-content: center; /* centrado estilo figma */
+    justify-content: center;
     align-items: center;
 }
 
 /* Botón logout */
 .logout-btn {
-    background: var(--morado-oscuro-1);
+    background: var(--color2);
     color: white;
     padding: 8px 15px;
     border-radius: 12px;
@@ -133,7 +132,7 @@ body {
 }
 
 .logout-btn:hover {
-    background: var(--morado-pastel);
+    background: var(--color3);
 }
 
 /* Layout principal */
@@ -146,7 +145,7 @@ body {
 /* Sidebar */
 .sidebar {
     width: 250px;
-    background: var(--morado-oscuro-2);
+    background: var(--color1);
     color: white;
     padding: 20px;
     border-radius: 20px;
@@ -165,7 +164,7 @@ body {
 
 /* Nombre usuario */
 .user-box p {
-    font-size: 27px; /* tamaño más grande */
+    font-size: 27px;
     font-weight: 600;
     margin: 0;
     color: white;
@@ -184,7 +183,7 @@ body {
 
 .user-avatar svg {
     width: 28px;
-    fill: var(--morado-oscuro-1);
+    fill: var(--color2);
 }
 
 /* buscador */
@@ -198,7 +197,7 @@ body {
 
 /* Botones sidebar */
 .side-btn {
-    background: var(--morado-oscuro-1);
+    background: var(--color2);
     color: white;
     border: none;
     padding: 10px;
@@ -210,18 +209,18 @@ body {
 
 /* hover */
 .side-btn:hover {
-    background: var(--morado-pastel);
+    background: var(--color3);
 }
 
 /* botón activo */
 .side-btn.active {
-    background: var(--gris-claro);
-    color: var(--morado-oscuro-2);
+    background: var(--color5);
+    color: var(--color1);
 }
 
 /* botón activo */
 .side-btn.active:hover {
-    background: var(--morado-pastel);
+    background: var(--color3);
     color: white;
 }
 
@@ -240,7 +239,7 @@ body {
 
 /* Contenido interno */
 .content {
-    background: var(--morado-gris);
+    background: var(--color5);
     padding: 25px;
     border-radius: 20px;
     min-height: 80vh;
@@ -250,7 +249,7 @@ body {
 
 /* Formularios */
 form {
-    background: var(--morado-pastel);
+    background: var(--color3);
     padding: 20px;
     border-radius: 20px;
     margin-bottom: 20px;
@@ -273,7 +272,7 @@ input, select {
     padding: 10px;
     border-radius: 12px;
     border: none;
-    background: var(--gris-claro);
+    background: var(--color5);
 }
 
 /* Botones */
@@ -286,12 +285,12 @@ input, select {
 }
 
 .btn-primary {
-    background: var(--morado-oscuro-1) !important;
+    background: var(--color2) !important;
     color: white;
 }
 
 .btn-primary:hover {
-    background: var(--morado-oscuro-2) !important;
+    background: var(--color1) !important;
 }
 
 /* Tabla */
@@ -306,12 +305,12 @@ table {
 thead th {
     padding: 10px;
     text-align: left;
-    color: var(--morado-oscuro-2);
+    color: var(--color1);
 }
 
 /* Filas */
 tbody tr {
-    background: var(--morado-gris);
+    background: var(--color5);
     border-radius: 12px;
 }
 
@@ -322,17 +321,17 @@ td {
 
 /* Hover tabla */
 tbody tr:hover {
-    background: var(--gris-claro);
+    background: var(--color5);
 }
 
 /* Mensaje */
 .flash-message {
-    background: var(--morado-claro);
-    border-left: 5px solid var(--morado-oscuro-1);
+    background: var(--color4);
+    border-left: 5px solid var(--color2);
     padding: 12px;
     margin-bottom: 16px;
     border-radius: 10px;
-    color: var(--morado-oscuro-2);
+    color: var(--color1);
 }
 
 /* Sombras */
@@ -347,18 +346,16 @@ table {
 
 /* authentication */
 
-/* Labels dentro de #authentication */
 #authentication label {
-    display: block;      /* asegura que label esté sobre el input */
-    margin-bottom: 6px;  /* espacio entre label e input */
+    display: block;
+    margin-bottom: 6px;
     font-weight: 600;
-    color: var(--morado-oscuro-2);
+    color: var(--color1);
 }
 
-/* Inputs y selects dentro de #authentication */
 #authentication input.form-control,
 #authentication select.form-control {
-    margin-bottom: 12px; /* espacio debajo del input antes del siguiente */
+    margin-bottom: 12px;
 }
 
 #authentication section h3 {
@@ -371,7 +368,6 @@ table {
 
 /* inventario */
 
-/* Secciones de inventario */
 #inventory section {
     margin-bottom: 30px;
 }
@@ -379,7 +375,7 @@ table {
 #inventory h3 {
     margin-top: 25px;
     margin-bottom: 15px;
-    color: var(--morado-oscuro-2);
+    color: var(--color1);
 }
 
 #inventory .form-group {
@@ -393,7 +389,7 @@ table {
 #inventory .form-group select {
     padding: 10px;
     border-radius: 12px;
-    border: 1px solid var(--gris);
+    border: 1px solid var(--color6);
     width: 100%;
 }
 
@@ -402,9 +398,8 @@ table {
     width: fit-content;
 }
 
-/* Botones de inventario: unificados moraditos */
 #inventory button {
-    background-color: var(--morado-oscuro-1) !important;
+    background-color: var(--color2) !important;
     color: white !important;
     border: none !important;
     padding: 6px 12px !important;
@@ -415,15 +410,108 @@ table {
 }
 
 #inventory button:hover {
-    background-color: var(--morado-oscuro-2) !important;
+    background-color: var(--color1) !important;
     color: white !important;
 }
 
-/* Botón genérico de formulario (guardar producto, crear categoría) */
 #inventory .btn-primary {
-    background-color: var(--morado-oscuro-1) !important;
+    background-color: var(--color2) !important;
 }
 
 #inventory .btn-primary:hover {
-    background-color: var(--morado-oscuro-2) !important;
+    background-color: var(--color1) !important;
+}
+
+/* Modo oscuro */
+
+body.dark-mode {
+    --color1: #2b2c37;   /* fondo principal oscuro */
+    --color2: #7b7a7c;   /* botones */
+    --color3: #9f9e9e;   /* elementos secundarios */
+    --color4: #cecece;   /* fondos suaves */
+    --color5: #1f2028;   /* fondo más oscuro (ajustado para contraste) */
+    --color6: #BFD4EC;   /* detalles azules */
+}
+
+#darkModeBtn {
+    width: 100%;
+}
+
+/* FIX modo oscuro */
+body.dark-mode {
+    color: #EAEAEA;
+}
+
+/* contenido */
+body.dark-mode .content {
+    background: #1f2028;
+}
+
+/* tablas */
+body.dark-mode table {
+    background: #2b2c37;
+    color: #EAEAEA;
+}
+
+body.dark-mode thead th {
+    color: #BFD4EC;
+}
+
+body.dark-mode tbody tr {
+    background: #2b2c37;
+}
+
+body.dark-mode tbody tr:hover {
+    background: #3a3b47;
+}
+
+/* inputs */
+body.dark-mode input,
+body.dark-mode select {
+    background: #2b2c37;
+    color: #EAEAEA;
+}
+
+/* forms */
+body.dark-mode form {
+    background: #2b2c37;
+}
+
+/* sidebar botones */
+body.dark-mode .side-btn {
+    background: #3a3b47;
+}
+
+body.dark-mode .side-btn:hover {
+    background: #5a5b66;
+}
+
+/* botón activo */
+body.dark-mode .side-btn.active {
+    background: #7FA9D6;
+    color: #1f2028;
+}
+
+/* inputs texto visible */
+body.dark-mode input,
+body.dark-mode select,
+body.dark-mode textarea {
+    background: #2b2c37;
+    color: #ffffff;
+    border: 1px solid #5a5b66;
+}
+
+/* placeholder visible */
+body.dark-mode input::placeholder,
+body.dark-mode textarea::placeholder {
+    color: #9f9e9e;
+}
+
+/* el color del focus */
+body.dark-mode input:focus,
+body.dark-mode select:focus,
+body.dark-mode textarea:focus {
+    outline: none;
+    border: 1px solid #7FA9D6;
+    box-shadow: 0 0 5px rgba(127, 169, 214, 0.5);
 }
