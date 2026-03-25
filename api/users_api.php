@@ -1,6 +1,10 @@
 <?php
+ob_start(); // Captura cualquier salida accidental para no romper el JSON
 header("Content-Type: application/json");
 require_once "../config/db.php";
+
+// Asegurar que PDO lance excepciones si hay errores de SQL
+$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
 $method = $_SERVER['REQUEST_METHOD'];
 $data = json_decode(file_get_contents("php://input"), true);
@@ -8,18 +12,32 @@ $data = json_decode(file_get_contents("php://input"), true);
 try {
     // --- OBTENER USUARIOS ---
     if ($method == "GET") {
-        $stmt = $pdo->query("SELECT id_user, full_name, email, phone, id_role, active FROM users");
+        // Añadí recovery_code a la consulta por si necesitas consultarlo desde el admin
+        $stmt = $pdo->query("SELECT id_user, full_name, email, phone, id_role, active, recovery_code FROM users");
         echo json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));
     }
 
     // --- CREAR USUARIO ---
     if ($method == "POST") {
-        if (empty($data["full_name"]) || empty($data["email"])) {
-            throw new Exception("Incomplete user data provided");
+        if (empty($data["full_name"]) || empty($data["email"]) || empty($data["phone"]) || empty($data["password"])) {
+            throw new Exception("All fields are required.");
         }
 
-        $sql = "INSERT INTO users (full_name, email, phone, password_hash, id_role, active)
-                VALUES (:name, :email, :phone, :pass, :role, 1)";
+        // Validación de Email
+        if (!filter_var($data["email"], FILTER_VALIDATE_EMAIL)) {
+            throw new Exception("Invalid email format.");
+        }
+
+        // Validación de Teléfono (8 a 15 números)
+        if (!preg_match('/^[0-9]{8,15}$/', $data["phone"])) {
+            throw new Exception("Phone must contain 8-15 digits.");
+        }
+
+        // --- GENERACIÓN AUTOMÁTICA DEL CÓDIGO ---
+        $recovery_code = rand(1000, 9999);
+
+        $sql = "INSERT INTO users (full_name, email, phone, password_hash, id_role, recovery_code, active)
+                VALUES (:name, :email, :phone, :pass, :role, :code, 1)";
         
         $stmt = $pdo->prepare($sql);
         $stmt->execute([
@@ -27,15 +45,28 @@ try {
             ":email" => $data["email"],
             ":phone" => $data["phone"],
             ":pass"  => password_hash($data["password"], PASSWORD_DEFAULT),
-            ":role"  => $data["id_role"]
+            ":role"  => $data["id_role"],
+            ":code"  => $recovery_code
         ]);
 
-        echo json_encode(["message" => "User created successfully"]);
+        // Retornamos el código en el mensaje para que el Admin pueda verlo
+        echo json_encode([
+            "message" => "User created successfully. Recovery Code: " . $recovery_code,
+            "recovery_code" => $recovery_code
+        ]);
     }
 
     // --- ACTUALIZAR USUARIO ---
     if ($method == "PUT") {
         if (empty($data["id_user"])) throw new Exception("ID of user not provided");
+
+        if (!filter_var($data["email"], FILTER_VALIDATE_EMAIL)) {
+            throw new Exception("Invalid email format.");
+        }
+
+        if (!preg_match('/^[0-9]{8,15}$/', $data["phone"])) {
+            throw new Exception("Phone must contain 8-15 digits.");
+        }
 
         $sql = "UPDATE users
                 SET full_name = :name,
@@ -69,10 +100,11 @@ try {
     }
 
 } catch (Exception $e) {
-    // Si algo falla, enviamos el error en formato JSON
-    http_response_code(500);
+    ob_clean(); 
+    http_response_code(400); 
     echo json_encode([
         "error" => true,
-        "message" => "Error: " . $e->getMessage()
+        "message" => $e->getMessage()
     ]);
 }
+ob_end_flush();
