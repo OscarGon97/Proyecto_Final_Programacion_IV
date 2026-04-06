@@ -150,9 +150,6 @@ $sale_details = $pdo->query("SELECT sd.id_sale, p.product_name, sd.quantity, sd.
     <!-- sidebar -->
     <div class="sidebar">
 
-        <!-- buscador -->
-        <input type="text" class="search-bar" placeholder="Search...">
-
         <!-- usuario -->
         <div class="user-box">
                 <!-- logo -->
