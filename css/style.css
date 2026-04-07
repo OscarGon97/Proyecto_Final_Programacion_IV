@@ -160,7 +160,9 @@ body {
     border-radius: 20px;
     display: flex;
     flex-direction: column;
+    height: 100vh; /* que ocupe toda la altura */
     gap: 15px;
+    position: relative; /* necesario si queremos colocar elementos absolutos */
 }
 
 /* contenedor usuario */
@@ -448,8 +450,25 @@ body.dark-mode {
     --color7: #7FA9D6;   /* acento */
 }
 
+
+/* Dark Mode al final, más compacto */
 #darkModeBtn {
-    width: 100%;
+    margin-top: auto;      /* empuja hacia abajo */
+    margin-bottom: 20px;   /* separación con borde inferior */
+    align-self: center;    /* centra horizontalmente */
+    width: 80%;            /* más compacto */
+    padding: 6px 0;        /* menos alto */
+    border-radius: 10px;
+    font-size: 14px;
+    background-color: var(--color4);
+    color: rgb(23, 22, 22);
+    transition: 0.2s;
+    flex-shrink: 0;        /* evita que se comprima */
+}
+
+#darkModeBtn:hover {
+    background-color: var(--color2);
+    transform: translateY(-1px);
 }
 
 /* FIX modo oscuro */
@@ -550,6 +569,15 @@ body.dark-mode h3 {
     border-radius: 10px;
     display: inline-block;
 }
+
+.dark-mode-container {
+    margin-top: auto;       /* empuja al fondo del sidebar */
+    display: flex;
+    justify-content: center; /* centra horizontalmente */
+}
+
+/* login */
+
 
 .login-page .forgot-password {
     margin-top: 18px;
