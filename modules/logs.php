@@ -80,7 +80,7 @@
                 userSelect.innerHTML = ''; // limpiar
                 var optionAll = document.createElement('option');
                 optionAll.value = '';
-                optionAll.textContent = 'Todos los usuarios';
+                optionAll.textContent = 'All the users';
                 userSelect.appendChild(optionAll);
                 if (data.users && data.users.length) {
                     for (var i = 0; i < data.users.length; i++) {
@@ -97,7 +97,7 @@
                     actionSelect.innerHTML = '';
                     var optAllAct = document.createElement('option');
                     optAllAct.value = '';
-                    optAllAct.textContent = 'Todas las acciones';
+                    optAllAct.textContent = 'All the actions';
                     actionSelect.appendChild(optAllAct);
                     for (var j = 0; j < data.actions.length; j++) {
                         var opt = document.createElement('option');
@@ -110,7 +110,7 @@
                     tableSelect.innerHTML = '';
                     var optAllTab = document.createElement('option');
                     optAllTab.value = '';
-                    optAllTab.textContent = 'Todas las tablas';
+                    optAllTab.textContent = 'All the tables';
                     tableSelect.appendChild(optAllTab);
                     for (var k = 0; k < data.tables.length; k++) {
                         var optTab = document.createElement('option');
@@ -125,7 +125,7 @@
                     errorMsgSelect.innerHTML = '';
                     var optAllErr = document.createElement('option');
                     optAllErr.value = '';
-                    optAllErr.textContent = 'Todos los mensajes';
+                    optAllErr.textContent = 'All the massages';
                     errorMsgSelect.appendChild(optAllErr);
                     for (var m = 0; m < data.errorMessages.length; m++) {
                         var msg = data.errorMessages[m];
@@ -217,20 +217,20 @@
             var celdaVacia = document.createElement('td');
             celdaVacia.colSpan = 10;
             celdaVacia.style.textAlign = 'center';
-            celdaVacia.textContent = 'No hay registros';
+            celdaVacia.textContent = 'There are no records';
             filaVacia.appendChild(celdaVacia);
             tbody.appendChild(filaVacia);
             
             if (tipo === 'activity') {
-                thead.innerHTML = '<tr><th>ID</th><th>Usuario</th><th>Acción</th><th>Tabla</th><th>ID Registro</th><th>Valor antiguo</th><th>Valor nuevo</th><th>Fecha</th></tr>';
+                thead.innerHTML = '<tr><th>ID</th><th>User</th><th>Action</th><th>Tables</th><th>ID Register</th><th>Old Value</th><th>New Value</th><th>Date</th></tr>';
             } else {
-                thead.innerHTML = '<tr><th>ID</th><th>Usuario</th><th>Mensaje de error</th><th>Procedimiento</th><th>Código error</th><th>Fecha</th></tr>';
+                thead.innerHTML = '<tr><th>ID</th><th>User</th><th>Error massage</th><th>Procedure</th><th>Error Code</th><th>Date</th></tr>';
             }
             return;
         }
 
         if (tipo === 'activity') {
-            thead.innerHTML = '<tr><th>ID</th><th>Usuario</th><th>Acción</th><th>Tabla</th><th>ID Registro</th><th>Valor antiguo</th><th>Valor nuevo</th><th>Fecha</th></tr>';
+            thead.innerHTML = '<tr><th>ID</th><th>Usuario</th><th>Acción</th><th>Tables</th><th>ID Registro</th><th>Valor antiguo</th><th>Valor nuevo</th><th>Fecha</th></tr>';
             for (var i = 0; i < datos.length; i++) {
                 var r = datos[i];
                 var fila = document.createElement('tr');
