@@ -20,7 +20,7 @@ function log_auth_attempt(PDO $pdo, string $username, string $status, ?int $user
 }
 
 /**
- * 2. LÓGICA DE PROCESAMIENTO
+ * 2. LÓGICA DE PROCESAMIENTOa
  */
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = trim($_POST['username'] ?? '');
