@@ -2,7 +2,7 @@
     <h2>Appointments and Patients</h2>
 
     <!-- Formulario -->
-    <form method="post" style="border:1px solid #ddd;padding:12px;margin-bottom:16px;">
+    <<form method="post" action="api/appointments_api.php" style="border:1px solid #ddd;padding:12px;margin-bottom:16px;">
         <input type="hidden" name="action" value="add_appointment">
         <h4>Create Appointment</h4>
 
@@ -87,7 +87,7 @@
     <div id="formCerrar" style="display:none; border:1px solid #ccc; padding:15px; margin-top:20px; background:#f9f9f9;">
         <h4>Close Appointment</h4>
 
-        <form method="post">
+        <form method="post" action="api/appointments_api.php">
             <input type="hidden" name="action" value="close_appointment">
             <input type="hidden" name="appointment_id" id="appointment_id">
 
