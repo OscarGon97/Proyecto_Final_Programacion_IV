@@ -3,6 +3,16 @@ session_start();
 // iniciar sesión y conexión a base de datos
 require_once 'config/db.php';
 
+// Cerrar sesión tras 10 minutos de inactividad
+$inactiveLimitSeconds = 600;
+if (isset($_SESSION['last_activity']) && (time() - (int)$_SESSION['last_activity'] > $inactiveLimitSeconds)) {
+    session_unset();
+    session_destroy();
+    header("Location: index.php?error=timeout");
+    exit;
+}
+$_SESSION['last_activity'] = time();
+
 if (!isset($_SESSION['user_id'])) {
     header("Location: index.php");
     exit;
@@ -89,20 +99,53 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['action'])) {
             case 'create_sale':
                 $patientId = (int)($_POST['sale_patient_id'] ?? 0);
                 $batchId = (int)($_POST['sale_batch_id'] ?? 0);
-                $saleQty = (int)($_POST['sale_quantity'] ?? 0);
+                $saleQty = (float)($_POST['sale_quantity'] ?? 0);
                 $price = (float)($_POST['sale_price'] ?? 0);
                 $saleStatus = (int)($_POST['sale_status'] ?? 1);
-                if (!$patientId || !$batchId || $saleQty <= 0 || $price <= 0) { throw new Exception('Incomplete sale data.'); }
+                $subtotal = isset($_POST['subtotal']) ? (float)$_POST['subtotal'] : ($saleQty * $price);
+                $tax = isset($_POST['tax']) ? (float)$_POST['tax'] : 0;
+                $total = $subtotal + $tax;
+                $userId = (int)($_POST['sale_user_id'] ?? ($_SESSION['user_id'] ?? 0));
+                $paymentMethod = strtolower(trim($_POST['payment_method'] ?? 'cash'));
+                $paymentPhone = trim($_POST['payment_phone'] ?? '');
+                if (!in_array($paymentMethod, ['cash', 'card', 'sinpe'], true)) {
+                    throw new Exception('Invalid payment method.');
+                }
+                if (in_array($paymentMethod, ['card', 'sinpe'], true) && $paymentPhone === '') {
+                    throw new Exception('Phone is required for Card/Sinpe payments.');
+                }
+                if ($paymentMethod === 'cash') {
+                    $paymentPhone = null;
+                }
+                $missing = [];
+                if (!$patientId) $missing[] = 'Paciente';
+                if (!$batchId) $missing[] = 'Batch';
+                if ($saleQty <= 0) $missing[] = 'Cantidad';
+                if ($price <= 0) $missing[] = 'Precio unitario';
+                if (!$userId) $missing[] = 'Usuario';
+                if ($subtotal <= 0) $missing[] = 'Subtotal';
+                if ($total <= 0) $missing[] = 'Total';
+                if (!empty($missing)) {
+                    throw new Exception('Datos incompletos: ' . implode(', ', $missing));
+                }
                 $available = (int)$pdo->query("SELECT current_quantity FROM batches WHERE id_batch = $batchId")->fetchColumn();
                 if ($saleQty > $available) { throw new Exception('Insufficient stock in the selected batch.'); }
                 $pdo->beginTransaction();
-                $subtotal = $saleQty * $price;
-                $tax = 0; $total = $subtotal + $tax;
-                $pdo->prepare("INSERT INTO sales (id_patient, id_user, id_appointment, subtotal, tax, total, payment_method, id_sale_status) VALUES (:id_patient, :id_user, NULL, :subtotal, :tax, :total, :payment_method, :id_sale_status)")->execute([':id_patient'=>$patientId, ':id_user'=>$_SESSION['user_id'], ':subtotal'=>$subtotal, ':tax'=>$tax, ':total'=>$total, ':payment_method'=>'Cash', ':id_sale_status'=>$saleStatus]);
+                $stmtSale = $pdo->prepare("INSERT INTO sales (id_patient, id_user, id_appointment, subtotal, tax, total, payment_method, payment_phone, id_sale_status, active) VALUES (:id_patient, :id_user, NULL, :subtotal, :tax, :total, :payment_method, :payment_phone, :id_sale_status, 1)");
+                $stmtSale->execute([
+                    ':id_patient' => $patientId,
+                    ':id_user' => $userId,
+                    ':subtotal' => $subtotal,
+                    ':tax' => $tax,
+                    ':total' => $total,
+                    ':payment_method' => $paymentMethod,
+                    ':payment_phone' => $paymentPhone,
+                    ':id_sale_status' => $saleStatus
+                ]);
                 $saleId = $pdo->lastInsertId();
                 $batchProductId = (int)$pdo->query("SELECT id_product FROM batches WHERE id_batch = $batchId")->fetchColumn();
                 $pdo->prepare("INSERT INTO sale_details (id_sale, id_product, id_movement, quantity, unit_price, subtotal) VALUES (:id_sale, :id_product, :id_movement, :quantity, :unit_price, :subtotal)")->execute([':id_sale'=>$saleId, ':id_product'=>$batchProductId, ':id_movement'=>NULL, ':quantity'=>$saleQty, ':unit_price'=>$price, ':subtotal'=>$subtotal]);
-                $pdo->prepare("INSERT INTO inventory_movements (id_user, id_batch, id_movement_type, quantity, justification) VALUES (:id_user, :id_batch, 2, :quantity, 'Sale')")->execute([':id_user'=>$_SESSION['user_id'], ':id_batch'=>$batchId, ':quantity'=>-$saleQty]);
+                $pdo->prepare("INSERT INTO inventory_movements (id_user, id_batch, id_movement_type, quantity, justification) VALUES (:id_user, :id_batch, 2, :quantity, 'Sale')")->execute([':id_user'=>$userId, ':id_batch'=>$batchId, ':quantity'=>-$saleQty]);
                 $movementId = $pdo->lastInsertId();
                 $pdo->prepare("UPDATE batches SET current_quantity = current_quantity - :d WHERE id_batch = :id_batch")->execute([':d'=>$saleQty, ':id_batch'=>$batchId]);
                 $pdo->prepare("UPDATE sale_details SET id_movement = :id_movement WHERE id_sale = :id_sale")->execute([':id_movement'=>$movementId, ':id_sale'=>$saleId]);
@@ -126,6 +169,12 @@ try {
     // La columna ya existe o la migración ya fue aplicada; lo ignoramos
 }
 
+try {
+    $pdo->exec("ALTER TABLE sales ADD COLUMN payment_phone VARCHAR(20) NULL");
+} catch (PDOException $e) {
+    // La columna ya existe o la migración ya fue aplicada; lo ignoramos
+}
+
 // Carga de datos para módulos 
 $users_data = $pdo->query("SELECT id_user, full_name, email, id_role, active FROM users WHERE id_role = 2 AND active = 1 ORDER BY full_name")->fetchAll(PDO::FETCH_ASSOC);
 $products_data = $pdo->query("SELECT id_product, product_name, sale_price FROM products ORDER BY product_name")->fetchAll(PDO::FETCH_ASSOC);
@@ -133,7 +182,26 @@ $patients_data = $pdo->query("SELECT id_patient, CONCAT(first_name,' ',last_name
 $appointments_data = $pdo->query("SELECT a.id_appointment, CONCAT(p.first_name,' ',p.last_name) AS patient_name, u.full_name AS doctor_name, a.appointment_date, a.appointment_time, s.status_name AS status, a.reason FROM appointments a LEFT JOIN patients p ON a.id_patient=p.id_patient LEFT JOIN users u ON a.id_dentist_user=u.id_user LEFT JOIN appointment_statuses s ON a.id_appointment_status=s.id_status ORDER BY a.appointment_date DESC, a.appointment_time DESC")->fetchAll(PDO::FETCH_ASSOC);
 $batches_data = $pdo->query("SELECT b.id_batch, b.id_product, b.batch_number, b.current_quantity, b.expiration_date, b.initial_quantity, p.product_name FROM batches b LEFT JOIN products p ON b.id_product=p.id_product ORDER BY b.expiration_date ASC")->fetchAll(PDO::FETCH_ASSOC);
 $movements_data = $pdo->query("SELECT im.id_movement, b.id_batch AS batch_id, p.product_name AS product_name, im.quantity, mt.type_name AS type, im.justification, im.movement_date, u.full_name AS user_name FROM inventory_movements im LEFT JOIN batches b ON im.id_batch=b.id_batch LEFT JOIN products p ON b.id_product=p.id_product LEFT JOIN users u ON im.id_user=u.id_user LEFT JOIN movement_types mt ON im.id_movement_type=mt.id_type ORDER BY im.movement_date DESC")->fetchAll(PDO::FETCH_ASSOC);
-$sales_data = $pdo->query("SELECT s.id_sale, s.id_patient, s.id_user, s.id_sale_status, CONCAT(p.first_name,' ',p.last_name) AS patient_name, s.total, s.sale_date, u.full_name AS user_name, ss.status_name AS status FROM sales s LEFT JOIN patients p ON s.id_patient=p.id_patient LEFT JOIN users u ON s.id_user=u.id_user LEFT JOIN sale_statuses ss ON s.id_sale_status=ss.id_status WHERE s.active = 1 ORDER BY s.sale_date DESC")->fetchAll(PDO::FETCH_ASSOC);
+$sales_data = $pdo->query("SELECT 
+    s.id_sale, 
+    s.id_patient, 
+    s.id_user, 
+    s.id_sale_status, 
+    CONCAT(p.first_name,' ',p.last_name) AS patient_name, 
+    s.subtotal, 
+    s.tax, 
+    s.total, 
+    s.payment_method, 
+    s.payment_phone, 
+    s.sale_date, 
+    u.full_name AS user_name, 
+    ss.status_name AS status 
+FROM sales s 
+LEFT JOIN patients p ON s.id_patient=p.id_patient 
+LEFT JOIN users u ON s.id_user=u.id_user 
+LEFT JOIN sale_statuses ss ON s.id_sale_status=ss.id_status 
+WHERE s.active = 1 
+ORDER BY s.sale_date DESC")->fetchAll(PDO::FETCH_ASSOC);
 $sale_details = $pdo->query("SELECT sd.id_sale, p.product_name, sd.quantity, sd.unit_price, sd.subtotal, sd.id_movement FROM sale_details sd LEFT JOIN products p ON sd.id_product=p.id_product")->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
@@ -275,6 +343,28 @@ document.addEventListener("DOMContentLoaded", function() {
     if (localStorage.getItem("mode") === "dark") {
     document.body.classList.add("dark-mode");
 }
+
+    // Auto logout por inactividad en navegador (10 minutos)
+    const inactivityLimitMs = 10 * 60 * 1000;
+    let inactivityTimer = null;
+
+    function triggerInactivityLogout() {
+        window.location.href = 'logout.php';
+    }
+
+    function resetInactivityTimer() {
+        if (inactivityTimer) {
+            clearTimeout(inactivityTimer);
+        }
+        inactivityTimer = setTimeout(triggerInactivityLogout, inactivityLimitMs);
+    }
+
+    const activityEvents = ['mousemove', 'mousedown', 'keydown', 'scroll', 'touchstart', 'click'];
+    activityEvents.forEach(function(eventName) {
+        window.addEventListener(eventName, resetInactivityTimer, { passive: true });
+    });
+
+    resetInactivityTimer();
 
 });
 </script>

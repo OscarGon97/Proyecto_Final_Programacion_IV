@@ -45,6 +45,29 @@ if ($method == "DELETE") {
     echo json_encode(["message" => "Sale soft deleted", "id_sale" => $saleId]);
 }
 
+if ($method == "PATCH") {
+    $data = json_decode(file_get_contents("php://input"), true);
+    $saleId = (int)($_GET['id'] ?? $data['id'] ?? 0);
+    $newStatus = (int)($data['id_sale_status'] ?? 0);
+
+    if (!$saleId || !$newStatus) {
+        http_response_code(400);
+        echo json_encode(["error" => "Sale ID and status required"]);
+        exit;
+    }
+
+    $allowed = [1, 2, 3];
+    if (!in_array($newStatus, $allowed)) {
+        http_response_code(400);
+        echo json_encode(["error" => "Invalid status"]);
+        exit;
+    }
+
+    $stmt = $pdo->prepare("UPDATE sales SET id_sale_status = :status WHERE id_sale = :id");
+    $stmt->execute([':status' => $newStatus, ':id' => $saleId]);
+    echo json_encode(["message" => "Status updated", "id_sale" => $saleId, "id_sale_status" => $newStatus]);
+}
+
 if ($method == "POST") {
     $data = json_decode(file_get_contents("php://input"), true);
 
