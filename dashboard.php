@@ -3,6 +3,24 @@ session_start();
 // iniciar sesión y conexión a base de datos
 require_once 'config/db.php';
 
+// Función para registrar actividad, esto es para sales.php, ya que las entradas nuevas no lo hacen desde sales.api.php si no desde el dashboard
+function registerActivity($pdo, $userId, $action, $table, $recordId, $oldValue = null, $newValue = null) {
+    try {
+        if (is_array($oldValue) || is_object($oldValue)) {
+            $oldValue = json_encode($oldValue, JSON_UNESCAPED_UNICODE);
+        }
+        if (is_array($newValue) || is_object($newValue)) {
+            $newValue = json_encode($newValue, JSON_UNESCAPED_UNICODE);
+        }
+        $stmt = $pdo->prepare("CALL sp_activity_logs_create(?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$userId, $action, $table, $recordId, $oldValue, $newValue]);
+        return true;
+    } catch (PDOException $e) {
+        error_log("Error al registrar actividad: " . $e->getMessage());
+        return false;
+    }
+}
+
 // Cerrar sesión tras 10 minutos de inactividad
 $inactiveLimitSeconds = 600;
 if (isset($_SESSION['last_activity']) && (time() - (int)$_SESSION['last_activity'] > $inactiveLimitSeconds)) {
@@ -143,17 +161,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['action'])) {
                     ':id_sale_status' => $saleStatus
                 ]);
                 $saleId = $pdo->lastInsertId();
+                
+                // Registrar actividad
+                $newSaleData = [
+                    'id_patient' => $patientId,
+                    'id_user' => $userId,
+                    'subtotal' => $subtotal,
+                    'tax' => $tax,
+                    'total' => $total,
+                    'payment_method' => $paymentMethod,
+                    'payment_phone' => $paymentPhone,
+                    'id_sale_status' => $saleStatus
+                ];
+                registerActivity($pdo, $_SESSION['user_id'] ?? null, 'INSERT', 'sales', $saleId, null, $newSaleData);
+                
                 $batchProductId = (int)$pdo->query("SELECT id_product FROM batches WHERE id_batch = $batchId")->fetchColumn();
                 $pdo->prepare("INSERT INTO sale_details (id_sale, id_product, id_movement, quantity, unit_price, subtotal) VALUES (:id_sale, :id_product, :id_movement, :quantity, :unit_price, :subtotal)")->execute([':id_sale'=>$saleId, ':id_product'=>$batchProductId, ':id_movement'=>NULL, ':quantity'=>$saleQty, ':unit_price'=>$price, ':subtotal'=>$subtotal]);
                 $pdo->prepare("INSERT INTO inventory_movements (id_user, id_batch, id_movement_type, quantity, justification) VALUES (:id_user, :id_batch, 2, :quantity, 'Sale')")->execute([':id_user'=>$userId, ':id_batch'=>$batchId, ':quantity'=>-$saleQty]);
                 $movementId = $pdo->lastInsertId();
                 $pdo->prepare("UPDATE batches SET current_quantity = current_quantity - :d WHERE id_batch = :id_batch")->execute([':d'=>$saleQty, ':id_batch'=>$batchId]);
                 $pdo->prepare("UPDATE sale_details SET id_movement = :id_movement WHERE id_sale = :id_sale")->execute([':id_movement'=>$movementId, ':id_sale'=>$saleId]);
+                
+                // Registrar actividad
+                $newMovementData = [
+                    'id_user' => $userId,
+                    'id_batch' => $batchId,
+                    'id_movement_type' => 2,
+                    'quantity' => -$saleQty,
+                    'justification' => 'Venta'
+                ];
+                registerActivity($pdo, $_SESSION['user_id'] ?? null, 'INSERT', 'inventory_movements', $movementId, null, $newMovementData);
+                
                 $pdo->commit();
                 $flash = 'Sale registered successfully.'; $tab = 'sales'; break;
         }
     } catch (Exception $e) {
-        if ($pdo->inTransaction()) $pdo->rollBack();
+        if (isset($pdo) && $pdo->inTransaction()) $pdo->rollBack();
         $flash = 'Error: ' . $e->getMessage();
     }
     header('Location: dashboard.php?tab=' . urlencode($tab) . '&msg=' . urlencode($flash));
@@ -168,7 +211,6 @@ try {
 } catch (PDOException $e) {
     // La columna ya existe o la migración ya fue aplicada; lo ignoramos
 }
-
 try {
     $pdo->exec("ALTER TABLE sales ADD COLUMN payment_phone VARCHAR(20) NULL");
 } catch (PDOException $e) {
