@@ -94,53 +94,69 @@ try {
         ]);
     }
 
-    // --- ACTUALIZAR USUARIO ---
+    // actualizar usuarios
     if ($method == "PUT") {
-        if (empty($data["id_user"])) throw new Exception("ID of user not provided");
+    if (empty($data["id_user"])) throw new Exception("ID of user not provided");
 
-        // Obtener valores antiguos antes de actualizar
-        $stmtOld = $pdo->prepare("SELECT full_name, email, phone, id_role, active FROM users WHERE id_user = ?");
-        $stmtOld->execute([$data["id_user"]]);
-        $oldData = $stmtOld->fetch(PDO::FETCH_ASSOC);
-        if (!$oldData) {
-            throw new Exception("User not found");
-        }
+    // Obtener valores antiguos
+    $stmtOld = $pdo->prepare("SELECT full_name, email, phone, id_role, active FROM users WHERE id_user = ?");
+    $stmtOld->execute([$data["id_user"]]);
+    $oldData = $stmtOld->fetch(PDO::FETCH_ASSOC);
+    if (!$oldData) throw new Exception("User not found");
 
-        if (!filter_var($data["email"], FILTER_VALIDATE_EMAIL)) {
-            throw new Exception("Invalid email format.");
-        }
+    // Validaciones
+    if (!filter_var($data["email"], FILTER_VALIDATE_EMAIL)) throw new Exception("Invalid email format.");
+    if (!preg_match('/^[0-9]{8,15}$/', $data["phone"])) throw new Exception("Phone must contain 8-15 digits.");
 
-        if (!preg_match('/^[0-9]{8,15}$/', $data["phone"])) {
-            throw new Exception("Phone must contain 8-15 digits.");
-        }
+    // Preparar actualización
+    $sql = "UPDATE users SET full_name = :name, email = :email, phone = :phone, id_role = :role, active = :active WHERE id_user = :id";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([
+        ":id"     => $data["id_user"],
+        ":name"   => $data["full_name"],
+        ":email"  => $data["email"],
+        ":phone"  => $data["phone"],
+        ":role"   => $data["id_role"],
+        ":active" => $data["active"]
+    ]);
 
-        $sql = "UPDATE users
-                SET full_name = :name,
-                    email = :email,
-                    phone = :phone,
-                    id_role = :role,
-                    active = :active
-                WHERE id_user = :id";
+    // -detectar campos modificados
+    $changes = [];
+    $oldForLog = [];
+    $newForLog = [];
 
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute([
-            ":id"     => $data["id_user"],
-            ":name"   => $data["full_name"],
-            ":email"  => $data["email"],
-            ":phone"  => $data["phone"],
-            ":role"   => $data["id_role"],
-            ":active" => $data["active"]
-        ]);
+    if ($oldData['full_name'] != $data['full_name']) {
+        $changes[] = 'full_name';
+        $oldForLog['full_name'] = $oldData['full_name'];
+        $newForLog['full_name'] = $data['full_name'];
+    }
+    if ($oldData['email'] != $data['email']) {
+        $changes[] = 'email';
+        $oldForLog['email'] = $oldData['email'];
+        $newForLog['email'] = $data['email'];
+    }
+    if ($oldData['phone'] != $data['phone']) {
+        $changes[] = 'phone';
+        $oldForLog['phone'] = $oldData['phone'];
+        $newForLog['phone'] = $data['phone'];
+    }
+    if ($oldData['id_role'] != $data['id_role']) {
+        $changes[] = 'id_role';
+        $oldForLog['id_role'] = $oldData['id_role'];
+        $newForLog['id_role'] = $data['id_role'];
+    }
+    if ($oldData['active'] != $data['active']) {
+        $changes[] = 'active';
+        $oldForLog['active'] = $oldData['active'];
+        $newForLog['active'] = $data['active'];
+    }
 
-        // <--- egistrar actividad
-        $newData = [
-            'full_name' => $data["full_name"],
-            'email'     => $data["email"],
-            'phone'     => $data["phone"],
-            'id_role'   => $data["id_role"],
-            'active'    => $data["active"]
-        ];
-        registerActivity($pdo, $currentUserId, 'UPDATE', 'users', $data["id_user"], $oldData, $newData);
+    // Solo registrar si hay cambios
+    if (!empty($changes)) {
+        $oldJson = json_encode($oldForLog);
+        $newJson = json_encode($newForLog);
+        registerActivity($pdo, $currentUserId, 'UPDATE', 'users', $data["id_user"], $oldJson, $newJson);
+    }
 
         echo json_encode(["message" => "User updated successfully"]);
     }
