@@ -164,18 +164,57 @@ if ($method == "PUT") {
             ':id' => $id
         ]);
 
-        // Registrar actividad (UPDATE)
-        $newData = [
-            'id_card'    => $id_card,
-            'first_name' => $first_name,
-            'last_name'  => $last_name,
-            'birth_date' => $birth_date,
-            'phone'      => $phone,
-            'email'      => $email,
-            'address'    => $address,
-            'active'     => $active
-        ];
-        registerActivity($pdo, $currentUserId, 'UPDATE', 'patients', $id, $oldData, $newData);
+        $changes = [];
+        $oldDataForLog = [];
+        $newDataForLog = [];
+
+        if ($oldData['id_card'] != $id_card) {
+            $changes[] = 'id_card';
+            $oldDataForLog['id_card'] = $oldData['id_card'];
+            $newDataForLog['id_card'] = $id_card;
+        }
+        if ($oldData['first_name'] != $first_name) {
+            $changes[] = 'first_name';
+            $oldDataForLog['first_name'] = $oldData['first_name'];
+            $newDataForLog['first_name'] = $first_name;
+        }
+        if ($oldData['last_name'] != $last_name) {
+            $changes[] = 'last_name';
+            $oldDataForLog['last_name'] = $oldData['last_name'];
+            $newDataForLog['last_name'] = $last_name;
+        }
+        if ($oldData['birth_date'] != $birth_date) {
+            $changes[] = 'birth_date';
+            $oldDataForLog['birth_date'] = $oldData['birth_date'];
+            $newDataForLog['birth_date'] = $birth_date;
+        }
+        if ($oldData['phone'] != $phone) {
+            $changes[] = 'phone';
+            $oldDataForLog['phone'] = $oldData['phone'];
+            $newDataForLog['phone'] = $phone;
+        }
+        if ($oldData['email'] != $email) {
+            $changes[] = 'email';
+            $oldDataForLog['email'] = $oldData['email'];
+            $newDataForLog['email'] = $email;
+        }
+        if ($oldData['address'] != $address) {
+            $changes[] = 'address';
+            $oldDataForLog['address'] = $oldData['address'];
+            $newDataForLog['address'] = $address;
+        }
+        if ($oldData['active'] != $active) {
+            $changes[] = 'active';
+            $oldDataForLog['active'] = $oldData['active'];
+            $newDataForLog['active'] = $active;
+        }
+
+        // Solo registrar si hubo cambios
+        if (!empty($changes)) {
+            $oldJson = json_encode($oldDataForLog);
+            $newJson = json_encode($newDataForLog);
+            registerActivity($pdo, $currentUserId, 'UPDATE', 'patients', $id, $oldJson, $newJson);
+        }
 
         echo json_encode(["message" => "Patient updated successfully"]);
     } catch (PDOException $e) {
