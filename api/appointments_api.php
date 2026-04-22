@@ -93,11 +93,11 @@ if ($method == "POST") {
             ];
             registerActivity($pdo, $currentUserId, 'INSERT', 'appointments', $newId, null, $newData);
 
-            header("Location: ../index.php?tab=appointments&msg=created");
+            header("Location: ../dashboard.php?tab=appointments&msg=created");
             exit;
         } catch (PDOException $e) {
             error_log("Error creating appointment: " . $e->getMessage());
-            header("Location: ../index.php?tab=appointments&error=db");
+            header("Location: ../dashboard.php?tab=appointments&msg=closed");
             exit;
         }
     }
@@ -121,7 +121,7 @@ if ($method == "POST") {
             $oldStatus = $oldStmt->fetchColumn();
 
             // Cambiar estado a "Attended" (ajusta el ID según tu tabla appointment_statuses)
-            $newStatus = 3;
+            $newStatus = 2;
             $update = $pdo->prepare("UPDATE appointments SET id_appointment_status = ? WHERE id_appointment = ?");
             $update->execute([$newStatus, $appointment_id]);
 
@@ -144,11 +144,11 @@ if ($method == "POST") {
             registerActivity($pdo, $currentUserId, 'INSERT', 'medical_histories', $historyId, null, 
                 ['diagnosis' => $diagnostic, 'treatment' => $treatment]);
 
-            header("Location: ../index.php?tab=appointments&msg=closed");
+            header("Location: ../dashboard.php?tab=appointments&msg=closed");
             exit;
         } catch (PDOException $e) {
             error_log("Error closing appointment: " . $e->getMessage());
-            header("Location: ../index.php?tab=appointments&error=close");
+            header("Location: ../dashboard.php?tab=appointments&msg=closed");
             exit;
         }
     }
