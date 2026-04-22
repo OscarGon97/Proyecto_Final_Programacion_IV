@@ -108,24 +108,47 @@ if ($method == "DELETE") {
         $stmt->execute([$id_mov]);
         $mov = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if ($mov) {
-            // Registrar actividad 
-            registerActivity($pdo, $currentUserId, 'DELETE', 'inventory_movements', $id_mov, $mov, null);
-
-            // Revertir el efecto en el stock
-            if ($mov['id_movement_type'] == 1) { 
-                $sqlRev = "UPDATE products SET min_stock = min_stock - ? WHERE id_product = ?";
-            } else {
-                $sqlRev = "UPDATE products SET min_stock = min_stock + ? WHERE id_product = ?";
-            }
-            $pdo->prepare($sqlRev)->execute([$mov['quantity'], $mov['id_batch']]);
-
-            // Eliminar el movimiento
-            $pdo->prepare("DELETE FROM inventory_movements WHERE id_movement = ?")->execute([$id_mov]);
+        if (!$mov) {
+            throw new Exception("Movement not found");
         }
 
+        // Verificar si el movimiento está referenciado en sale_details (opcional, pero más clara)
+        $checkStmt = $pdo->prepare("SELECT COUNT(*) FROM sale_details WHERE id_movement = ?");
+        $checkStmt->execute([$id_mov]);
+        $usedInSale = $checkStmt->fetchColumn() > 0;
+
+        if ($usedInSale) {
+            throw new Exception("This movement cannot be deleted because it is associated with a sale. To delete it, you must first cancel the related sale..");
+        }
+
+        // Registrar actividad antes de borrar
+        registerActivity($pdo, $currentUserId, 'DELETE', 'inventory_movements', $id_mov, $mov, null);
+
+        // Revertir el efecto en el stock
+        if ($mov['id_movement_type'] == 1) { 
+            $sqlRev = "UPDATE products SET min_stock = min_stock - ? WHERE id_product = ?";
+        } else {
+            $sqlRev = "UPDATE products SET min_stock = min_stock + ? WHERE id_product = ?";
+        }
+        $pdo->prepare($sqlRev)->execute([$mov['quantity'], $mov['id_batch']]);
+
+        // Eliminar el movimiento
+        $pdo->prepare("DELETE FROM inventory_movements WHERE id_movement = ?")->execute([$id_mov]);
+
         $pdo->commit();
-        echo json_encode(["message" => "Movement deleted and stock reverted."]);
+        echo json_encode(["message" => "Movement deleted and stock reversed."]);
+    } catch (PDOException $e) {
+        if ($pdo->inTransaction()) $pdo->rollBack();
+        
+        // Detectar violación de clave foránea (error 1451 en MySQL)
+        if ($e->errorInfo[1] == 1451) {
+            echo json_encode([
+                "error" => true,
+                "message" => "This movement cannot be deleted because it is associated with a sale. To delete it, you must first cancel the related sale."
+            ]);
+        } else {
+            echo json_encode(["error" => true, "message" => "Database error: " . $e->getMessage()]);
+        }
     } catch (Exception $e) {
         if ($pdo->inTransaction()) $pdo->rollBack();
         echo json_encode(["error" => true, "message" => $e->getMessage()]);

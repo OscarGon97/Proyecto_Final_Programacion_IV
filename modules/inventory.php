@@ -387,7 +387,7 @@ async function eliminarMovimientoSeguro(id) {
         const res = await apiRequest("api/inventory_movements_api.php", "DELETE", { id_movement: id });
         
         if (res.error) {
-            alert("Error del servidor: " + res.message);
+            alert("Server error: " + res.message);
         } else {
             alert(res.message);
             await cargarMovimientos(); // Recargar tabla
