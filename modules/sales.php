@@ -92,7 +92,7 @@
 
 <!-- Modal para factura -->
 <div id="invoiceModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1000;justify-content:center;align-items:center;">
-    <div style="background:white;padding:30px;border-radius:8px;max-width:800px;width:90%;max-height:90vh;overflow-y:auto;">
+    <div class="invoice-modal">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
             <h2>Invoice</h2>
             <button type="button" onclick="closeSaleInvoice()" style="background:none;border:none;font-size:24px;cursor:pointer;">&times;</button>

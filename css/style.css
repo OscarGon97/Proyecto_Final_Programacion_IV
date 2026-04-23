@@ -991,5 +991,60 @@ body.dark-mode textarea:focus {
 }
 
 
+/* Factura */
 
+/* modal factura */
+.invoice-modal {
+    background: white;
+    padding: 30px;
+    border-radius: 8px;
+    max-width: 800px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    border: 1px solid #5a5b66;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+}
 
+/* modo oscuro */
+body.dark-mode .invoice-modal {
+    background: #2b2c37;
+    color: #EAEAEA;
+}
+
+body.dark-mode .invoice-modal {
+    border: 1px solid #5a5b66;
+}
+
+body.dark-mode .invoice-modal h3,
+body.dark-mode .invoice-modal h4 {
+    color: var(--color7);
+}
+
+body.dark-mode .invoice-modal p {
+    color: #ccc;
+}
+
+/* FACTURA DARK MODE FIX GLOBAL */
+body.dark-mode #invoiceContent * {
+    color: #EAEAEA !important;
+    border-color: #5a5b66 !important;
+}
+
+/* tablas dentro de factura */
+body.dark-mode #invoiceContent table {
+    background: #2b2c37 !important;
+}
+
+body.dark-mode #invoiceContent th {
+    background: #3a3b47 !important;
+}
+
+body.dark-mode #invoiceContent td {
+    background: #2b2c37 !important;
+}
+
+/* bordes */
+body.dark-mode #invoiceContent div {
+    border-color: #5a5b66 !important;
+}
