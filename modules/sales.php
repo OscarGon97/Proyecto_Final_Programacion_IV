@@ -80,8 +80,10 @@
                 <td><?php echo htmlspecialchars($s['payment_phone'] ?? ''); ?></td>
                 <td><?php echo htmlspecialchars($s['sale_date']); ?></td>
                 <td>
-                    <button type="button" class="btn btn-small btn-info" onclick="viewSaleInvoice(<?php echo $s['id_sale']; ?>)">View Invoice</button>
-                    <button type="button" class="btn btn-small btn-danger" onclick="softDeleteSale(<?php echo $s['id_sale']; ?>)">Delete</button>
+                    <div class="action-buttons">
+                        <button type="button" class="btn btn-small btn-info" onclick="viewSaleInvoice(<?php echo $s['id_sale']; ?>)">View Invoice</button>
+                        <button type="button" class="btn btn-small btn-danger" onclick="softDeleteSale(<?php echo $s['id_sale']; ?>)">Delete</button>
+                    </div>
                 </td>
             </tr>
         <?php endforeach; ?>
@@ -92,7 +94,7 @@
 
 <!-- Modal para factura -->
 <div id="invoiceModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1000;justify-content:center;align-items:center;">
-    <div style="background:white;padding:30px;border-radius:8px;max-width:800px;width:90%;max-height:90vh;overflow-y:auto;">
+    <div class="invoice-modal">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
             <h2>Invoice</h2>
             <button type="button" onclick="closeSaleInvoice()" style="background:none;border:none;font-size:24px;cursor:pointer;">&times;</button>
@@ -150,8 +152,16 @@ function miniSetPrice() {
 
 // Inicializar eventos para el formulario minimalista
 document.addEventListener('DOMContentLoaded', function() {
-    document.getElementById('miniBatch').addEventListener('change', miniSetPrice);
-    document.getElementById('miniQty').addEventListener('input', miniCalc);
+    const miniBatch = document.getElementById('miniBatch');
+    const miniQty = document.getElementById('miniQty');
+
+    if (miniBatch) {
+        miniBatch.addEventListener('change', miniSetPrice);
+    }
+
+    if (miniQty) {
+        miniQty.addEventListener('input', miniCalc);
+    }
 });
 
 // Sincronizar selección de batch y rellenar precio automáticamente
@@ -175,9 +185,17 @@ function syncBatchSelection() {
 
 // Eventos para recalcular automáticamente
 document.addEventListener('DOMContentLoaded', function() {
-    document.getElementById('batchSearch').addEventListener('input', syncBatchSelection);
-    document.getElementById('batchSearch').addEventListener('change', syncBatchSelection);
-    document.getElementById('quantity').addEventListener('input', calculateSaleTotal);
+    const batchSearch = document.getElementById('batchSearch');
+    const quantity = document.getElementById('quantity');
+
+    if (batchSearch) {
+        batchSearch.addEventListener('input', syncBatchSelection);
+        batchSearch.addEventListener('change', syncBatchSelection);
+    }
+
+    if (quantity) {
+        quantity.addEventListener('input', calculateSaleTotal);
+    }
 });
 (function() {
     // Evitar conflictos con otros módulos
@@ -320,16 +338,16 @@ document.addEventListener('DOMContentLoaded', function() {
         const salePrice = document.querySelector('input[name="sale_price"]');
         let errorMsg = '';
         if (!patientId) {
-            errorMsg += 'Falta seleccionar un paciente válido.\n';
+            errorMsg += 'A valid patient must be selected.\n';
         }
         if (!batchId) {
-            errorMsg += 'Falta seleccionar un batch válido.\n';
+            errorMsg += 'A valid batch must be selected.\n';
         }
         if (!unitPriceValue || isNaN(parseFloat(unitPriceValue))) {
-            errorMsg += 'El precio unitario es inválido o está vacío.\n';
+            errorMsg += 'The unit price is invalid or empty.\n';
         }
         if (!quantityValue || isNaN(parseFloat(quantityValue)) || parseFloat(quantityValue) <= 0) {
-            errorMsg += 'La cantidad es inválida o está vacía.\n';
+            errorMsg += 'The quantity is invalid or empty.\n';
         }
         if (errorMsg) {
             alert(errorMsg);
@@ -344,9 +362,14 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     window.softDeleteSale = function(saleId) {
-        if (!confirm('Confirm soft delete for sale ' + saleId + '?')) return;
+        const parsedId = parseInt(saleId, 10);
+        if (!parsedId || parsedId <= 0) {
+            console.warn('softDeleteSale: invalid sale ID', saleId);
+            return;
+        }
+        if (!confirm('Confirm soft delete for sale ' + parsedId + '?')) return;
 
-        fetch('api/sales.api.php?id=' + saleId, {
+        fetch('api/sales.api.php?id=' + parsedId, {
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json' }
         })
@@ -372,13 +395,19 @@ document.addEventListener('DOMContentLoaded', function() {
 (function() {
     // Funciones de factura
     window.viewSaleInvoice = function(saleId) {
+        const parsedId = parseInt(saleId, 10);
+        if (!parsedId || parsedId <= 0) {
+            console.warn('viewSaleInvoice: invalid sale ID', saleId);
+            return;
+        }
+
         const modal = document.getElementById('invoiceModal');
         const contentDiv = document.getElementById('invoiceContent');
         
         modal.style.display = 'flex';
         contentDiv.innerHTML = '<p style="text-align:center;">Loading...</p>';
         
-        fetch('api/sales_details_api.php?id=' + saleId)
+        fetch('api/sales_details_api.php?id=' + parsedId)
             .then(response => response.json())
             .then(data => {
                 if (data.error) {
@@ -459,12 +488,20 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     window.updateSaleStatus = function(saleId) {
+        const parsedId = parseInt(saleId, 10);
+        if (!parsedId || parsedId <= 0) {
+            console.warn('updateSaleStatus: invalid sale ID', saleId);
+            return;
+        }
+
         const sel = document.getElementById('invoiceStatusSelect');
         const newStatus = parseInt(sel.value);
+        if (!newStatus || newStatus <= 0) return;
+
         const msg = document.getElementById('statusUpdateMsg');
         msg.textContent = 'Saving...';
         msg.style.color = '#555';
-        fetch('api/sales.api.php?id=' + saleId, {
+        fetch('api/sales.api.php?id=' + parsedId, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ id_sale_status: newStatus })
