@@ -362,9 +362,14 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     window.softDeleteSale = function(saleId) {
-        if (!confirm('Confirm soft delete for sale ' + saleId + '?')) return;
+        const parsedId = parseInt(saleId, 10);
+        if (!parsedId || parsedId <= 0) {
+            console.warn('softDeleteSale: invalid sale ID', saleId);
+            return;
+        }
+        if (!confirm('Confirm soft delete for sale ' + parsedId + '?')) return;
 
-        fetch('api/sales.api.php?id=' + saleId, {
+        fetch('api/sales.api.php?id=' + parsedId, {
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json' }
         })
@@ -390,13 +395,19 @@ document.addEventListener('DOMContentLoaded', function() {
 (function() {
     // Funciones de factura
     window.viewSaleInvoice = function(saleId) {
+        const parsedId = parseInt(saleId, 10);
+        if (!parsedId || parsedId <= 0) {
+            console.warn('viewSaleInvoice: invalid sale ID', saleId);
+            return;
+        }
+
         const modal = document.getElementById('invoiceModal');
         const contentDiv = document.getElementById('invoiceContent');
         
         modal.style.display = 'flex';
         contentDiv.innerHTML = '<p style="text-align:center;">Loading...</p>';
         
-        fetch('api/sales_details_api.php?id=' + saleId)
+        fetch('api/sales_details_api.php?id=' + parsedId)
             .then(response => response.json())
             .then(data => {
                 if (data.error) {
@@ -477,12 +488,20 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     window.updateSaleStatus = function(saleId) {
+        const parsedId = parseInt(saleId, 10);
+        if (!parsedId || parsedId <= 0) {
+            console.warn('updateSaleStatus: invalid sale ID', saleId);
+            return;
+        }
+
         const sel = document.getElementById('invoiceStatusSelect');
         const newStatus = parseInt(sel.value);
+        if (!newStatus || newStatus <= 0) return;
+
         const msg = document.getElementById('statusUpdateMsg');
         msg.textContent = 'Saving...';
         msg.style.color = '#555';
-        fetch('api/sales.api.php?id=' + saleId, {
+        fetch('api/sales.api.php?id=' + parsedId, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ id_sale_status: newStatus })

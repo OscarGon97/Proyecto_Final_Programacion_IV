@@ -177,7 +177,7 @@
         <button class="btn btn-primary" onclick="crearMovimiento()">Register</button>
     </div>
 </div>
-</div>
+    </section>
 
 <div id="modalEditarProducto" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:2000;">
     <div class="modal-content">
@@ -209,23 +209,28 @@
 
         <label>Product</label>
         <select id="edit_batch_product_select" class="form-control mb-2">
+                <small id="edit_batch_product_error" class="field-help"></small>
             <option value="">Select Product...</option>
         </select>
 
         <label>Batch Number</label>
         <input type="text" id="edit_batch_number" class="form-control mb-2">
+    <small id="edit_batch_number_error" class="field-help"></small>
 
         <label>Expiration Date</label>
         <input type="date" id="edit_batch_expiration_date" class="form-control mb-2">
+    <small id="edit_batch_expiration_error" class="field-help"></small>
 
         <label>Initial Quantity</label>
         <input type="number" id="edit_batch_initial_quantity" class="form-control mb-2" min="0">
+    <small id="edit_batch_initial_qty_error" class="field-help"></small>
 
         <label>Current Quantity</label>
         <input type="number" id="edit_batch_current_quantity" class="form-control mb-2" min="0">
+    <small id="edit_batch_current_qty_error" class="field-help"></small>
 
         <div class="mt-3">
-            <button onclick="guardarEdicionBatch()" class="btn btn-success w-100">Update Batch</button>
+            <button id="btnGuardarBatch" onclick="guardarEdicionBatch()" class="btn btn-success w-100">Update Batch</button>
             <button onclick="cerrarModalBatch()" class="btn btn-secondary w-100 mt-1">Cancel</button>
         </div>
     </div>
@@ -791,39 +796,4 @@ async function guardarEdicionProducto() {
 }
 </script>
 
-
-<div id="modalEditarProducto" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:2000;">
-    <div style="background:white; width:450px; margin:50px auto; padding:20px; border-radius:8px;">
-        <h3>Edit Product</h3>
-        
-        <input type="hidden" id="edit_prod_id">
-        
-        <label>Name</label>
-        <input type="text" id="edit_prod_name" style="width:100%; margin-bottom:10px;">
-        
-        <label>Barcode</label>
-        <small id="edit_batch_product_error" class="field-help"></small>
-        <input type="text" id="edit_prod_barcode" style="width:100%; margin-bottom:10px;">
-        
-        <label>Cost Price</label>
-        <small id="edit_batch_number_error" class="field-help"></small>
-        <input type="number" id="edit_prod_purchase" step="0.01" style="width:100%; margin-bottom:10px;">
-        
-        <label>Sale Price</label>
-        <small id="edit_batch_expiration_error" class="field-help"></small>
-        <input type="number" id="edit_prod_sale" step="0.01" style="width:100%; margin-bottom:10px;">
-        
-        <label>Minimum Stock</label>
-        <small id="edit_batch_initial_qty_error" class="field-help"></small>
-        <input type="number" id="edit_prod_stock" style="width:100%; margin-bottom:10px;">
-        
-        <label>Measurement Unit</label>
-        <small id="edit_batch_current_qty_error" class="field-help"></small>
-        <input type="text" id="edit_prod_unit" style="width:100%; margin-bottom:10px;">
-        
-            <button id="btnGuardarBatch" onclick="guardarEdicionBatch()" class="btn btn-success w-100">Update Batch</button>
-            <button onclick="guardarEdicionProducto()" class="btn-guardar" style="width:100%; padding:10px;">Update Product</button>
-            <button onclick="cerrarModalProducto()" style="background:#ccc; border:none; padding:10px; width:100%; margin-top:5px; cursor:pointer;">Cancel</button>
-        </div>
-    </div>
 </div>
